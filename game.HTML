@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connect Four</title>
+    <style>
+        body {
+            text-align: center;
+            font-family: Arial, sans-serif;
+        }
+        h1 {
+            color: #333;
+        }
+        .board {
+            display: grid;
+            grid-template-columns: repeat(7, 60px);
+            grid-gap: 5px;
+            background-color: blue;
+            padding: 10px;
+            width: max-content;
+            margin: auto;
+            border-radius: 10px;
+        }
+        .cell {
+            width: 60px;
+            height: 60px;
+            background-color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        .red {
+            background-color: red;
+        }
+        .yellow {
+            background-color: yellow;
+        }
+        .button-container {
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #333;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #555;
+        }
+    </style>
+</head>
+<body>
+    <h1>Connect Four</h1>
+    <div class="board" id="board"></div>
+    <div class="button-container">
+        <button onclick="resetGame()">Reset Game</button>
+    </div>
+    <script>
+        const rows = 6;
+        const cols = 7;
+        let currentPlayer = 'red';
+        let boardArray = Array(rows).fill().map(() => Array(cols).fill(null));
+
+        function createBoard() {
+            const board = document.getElementById('board');
+            board.innerHTML = '';
+            for (let row = 0; row < rows; row++) {
+                for (let col = 0; col < cols; col++) {
+                    const cell = document.createElement('div');
+                    cell.classList.add('cell');
+                    cell.dataset.row = row;
+                    cell.dataset.col = col;
+                    cell.addEventListener('click', () => dropPiece(col));
+                    board.appendChild(cell);
+                }
+            }
+        }
+
+        function dropPiece(col) {
+            for (let row = rows - 1; row >= 0; row--) {
+                if (!boardArray[row][col]) {
+                    boardArray[row][col] = currentPlayer;
+                    updateBoard();
+                    if (checkWinner(row, col)) {
+                        setTimeout(() => alert(currentPlayer.toUpperCase() + ' Wins!'), 10);
+                    }
+                    currentPlayer = (currentPlayer === 'red') ? 'yellow' : 'red';
+                    return;
+                }
+            }
+        }
+
+        function updateBoard() {
+            document.querySelectorAll('.cell').forEach(cell => {
+                let row = cell.dataset.row;
+                let col = cell.dataset.col;
+                cell.className = 'cell';
+                if (boardArray[row][col]) {
+                    cell.classList.add(boardArray[row][col]);
+                }
+            });
+        }
+
+        function checkWinner(row, col) {
+            return checkDirection(row, col, 1, 0) || // Vertical
+                   checkDirection(row, col, 0, 1) || // Horizontal
+                   checkDirection(row, col, 1, 1) || // Diagonal (
+                   checkDirection(row, col, 1, -1);  // Diagonal (/)
+        }
+
+        function checkDirection(row, col, rowDir, colDir) {
+            let count = 1;
+            count += countPieces(row, col, rowDir, colDir);
+            count += countPieces(row, col, -rowDir, -colDir);
+            return count >= 4;
+        }
+
+        function countPieces(row, col, rowDir, colDir) {
+            let count = 0;
+            let r = row + rowDir;
+            let c = col + colDir;
+            while (r >= 0 && r < rows && c >= 0 && c < cols && boardArray[r][c] === currentPlayer) {
+                count++;
+                r += rowDir;
+                c += colDir;
+            }
+            return count;
+        }
+
+        function resetGame() {
+            boardArray = Array(rows).fill().map(() => Array(cols).fill(null));
+            currentPlayer = 'red';
+            updateBoard();
+        }
+
+        createBoard();
+    </script>
+</body>
+</html>
